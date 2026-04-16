@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Room Color Suggestion</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        select, input, button {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .palette-container {
+            margin-top: 30px;
+        }
+
+        .suggestion-card {
+            margin: 20px 0;
+            padding: 15px;
+        }
+
+        .palette-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .color-box {
+            width: 80px;
+            height: 80px;
+            margin: 5px;
+            border-radius: 8px;
+        }
+
+        #designMode {
+            display: block;
+        }
+
+        #preferenceMode {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h2>🎨 AI Room Color Suggestion</h2>
+
+<form id="form">
+    <input type="file" name="image" required><br><br>
+
+    <!-- MODE SELECTOR -->
+    <label>Select Mode:</label>
+    <select id="mode" name="mode" onchange="toggleMode()">
+        <option value="design">🎨 Tone + Style</option>
+        <option value="preference">😊 Mood + Favorite Color</option>
+    </select>
+
+    <!-- DESIGN MODE -->
+    <div id="designMode">
+        <br>
+        <select name="tone">
+            <option value="warm">🔥 Warm</option>
+            <option value="cool">❄️ Cool</option>
+            <option value="neutral">⚪ Neutral</option>
+            <option value="earthy">🌿 Earthy</option>
+            <option value="pastel">🌸 Pastel</option>
+        </select>
+
+        <select name="style">
+            <option value="cozy">Cozy</option>
+            <option value="modern">Modern</option>
+            <option value="luxury">Luxury</option>
+            <option value="vibrant">Vibrant</option>
+            <option value="minimal">Minimal</option>
+            <option value="nature">Nature</option>
+        </select>
+    </div>
+
+    <!-- PREFERENCE MODE -->
+    <div id="preferenceMode">
+        <br>
+        <select name="mood">
+            <option value="calm">😌 Calm</option>
+            <option value="cozy">🤗 Cozy</option>
+            <option value="energetic">⚡ Energetic</option>
+            <option value="luxurious">👑 Luxurious</option>
+            <option value="fresh">🌿 Fresh</option>
+            <option value="romantic">💕 Romantic</option>
+        </select>
+
+        <input type="color" name="fav_color" value="#FFD1DC">
+    </div>
+
+    <br><br>
+    <button type="submit">Suggest</button>
+</form>
+
+<div class="palette-container" id="palette"></div>
+
+<script>
+function toggleMode() {
+    let mode = document.getElementById("mode").value;
+
+    let design = document.getElementById("designMode");
+    let preference = document.getElementById("preferenceMode");
+
+    if (mode === "design") {
+        design.style.display = "block";
+        preference.style.display = "none";
+    } else {
+        design.style.display = "none";
+        preference.style.display = "block";
+    }
+}
+
+document.getElementById("form").onsubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+
+    const res = await fetch("/suggest", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await res.json();
+
+    const paletteDiv = document.getElementById("palette");
+    paletteDiv.innerHTML = "";
+
+    data.forEach((palette, index) => {
+        const container = document.createElement("div");
+        container.className = "suggestion-card";
+
+        const title = document.createElement("h3");
+        title.innerText = `Suggestion ${index + 1}`;
+        container.appendChild(title);
+
+        const row = document.createElement("div");
+        row.className = "palette-row";
+
+        palette.colors.forEach(color => {
+            const box = document.createElement("div");
+            box.className = "color-box";
+            box.style.background = color;
+            row.appendChild(box);
+        });
+
+        container.appendChild(row);
+        paletteDiv.appendChild(container);
+    });
+};
+</script>
+
+</body>
+</html>
